@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <ul>
+        <li><a href="#" onclick="cambio(inicio.html)">inicio</a></li>
+        <li><a href="#" onclick="cambio(acerca.html)">acerca</a></li>
+        <li><a href="#" onclick="cambio(contacto.html)">contacto</a></li>
+    </ul>
+
+    <div id="cambio">
+        <h1 >Texto de cambio</h1>
+    </div>
+
+
+    
+
+    <script>
+        function cambio() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("cambio").innerHTML =
+                        this.responseText;
+                }
+            };
+            xhttp.open("GET", "", true);
+            xhttp.send();
+        }
+    </script>
+
+</body>
+
+</html>
