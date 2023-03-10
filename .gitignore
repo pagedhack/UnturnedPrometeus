@@ -1,4 +1,3 @@
-Angular2/node_modules/
-Angular2/angular-01/node_modules
-Angular2/Angular-01/.angular
-Angular2/Angular-01/.vscode
+node_modules/
+.angular/
+.vscode
