@@ -9,6 +9,6 @@ export class MenuComponent {
   opciones:Array<string>;
 
   constructor(){
-    this.opciones = ['inicio', 'acerca', 'contacto', 'Datos'];
+    this.opciones = ['inicio', 'acerca', 'contacto', 'Datos', 'Formulario', 'Mostrar'];
   }
 }

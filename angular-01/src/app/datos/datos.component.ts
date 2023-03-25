@@ -7,10 +7,10 @@ import { DataService } from '../data.service';
   styleUrls: ['./datos.component.css']
 })
 export class DatosComponent {
-
+  items: any[] = [];
   constructor(private dataService: DataService) {}
 
   ngOnInit(){
-    this.dataService.Salvar(["Jorge"]);
+    this.dataService.mostrarSaludador();
   }
 }

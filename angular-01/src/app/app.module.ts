@@ -9,6 +9,9 @@ import { ContactoComponent } from './contacto/contacto.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { DatosComponent } from './datos/datos.component';
+import { FormularioComponent } from './formulario/formulario.component';
+import { FormsModule } from '@angular/forms';
+import { MostrarComponent } from './mostrar/mostrar.component';
 
 @NgModule({
   declarations: [
@@ -17,12 +20,15 @@ import { DatosComponent } from './datos/datos.component';
     MenuComponent,
     AcercaComponent,
     ContactoComponent,
-    DatosComponent
+    DatosComponent,
+    FormularioComponent,
+    MostrarComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
