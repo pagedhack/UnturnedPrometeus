@@ -1,0 +1,21 @@
+Reporte de fallo del micro controlador 
+Esp32 nodeMCU 38 pin WROOM 32
+
+el microcontrolador comenzo presentando fallos a la hora de conexion, los esp32 de 32 pines 
+tienen el led integrado a la hora de cargar con un cable usb, el esp32 nodeMCU de 38 pines, tiene un 
+led integrado pero a la hora de conectar no queda encendido el led integrado.
+
+se instalo el controlador para el modulo CP2102 "CP210x USB to UART Bridge VCP Drivers", instalando la version
+CP210x Universal Windows Driver v11.2.0, con la instalacion exitosa. dentro de la instalacion a la hora de conexion 
+del microcontrolador, no detecta el dispositivo en la maquina destino.
+
+se tuvo que instalar de igual manera para mi uso practico dentro del sistema de mi computadora
+los demas drivers ya que no tiene habilitado el puerto LTP
+se instalo "CP210x VCP Windows" v6.7
+           "CP210x Windows Drivers with Serial Enumerator"
+
+
+en algunos casos de algunos microcontroladores son comprados y son diferentes en cierto modo ya que son de fabricacion
+china y necesita un driver especifico para su uso en la maquina.
+
+tambien verifique el cable usb con el cual estaba alimentando el microcontrolador ya que no deben ser cualquier cable.
