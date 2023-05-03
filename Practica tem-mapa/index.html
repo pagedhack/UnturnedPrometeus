@@ -40,6 +40,7 @@
 
     <script>
 
+        var marker = L.marker([0, 0]).addTo(map);
         var map = L.map('map').setView([0, 0], 13);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 2,
@@ -49,7 +50,7 @@
         function enviar() {
             lati = this.document.getElementById('lat').value;
             long = this.document.getElementById('lon').value;
-            var marker = L.marker([lati, long]).addTo(map);
+            var marker = L.marker([lati, long]).update(marker);
         }
 
         // var popup = L.popup();
