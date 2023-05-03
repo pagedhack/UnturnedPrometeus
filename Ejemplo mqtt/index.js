@@ -1,5 +1,5 @@
 // Create a client instance
-client = new Paho.MQTT.Client("127.0.0.1", 9001, "SOO");
+client = new Paho.MQTT.Client("192.168.100.50", 9001, "SOO");
 
 // set callback handlers
 client.onConnectionLost = onConnectionLost;
@@ -13,7 +13,7 @@ client.connect({onSuccess:onConnect});
 function onConnect() {
   // Once a connection has been made, make a subscription and send a message.
   console.log("onConnect");
-  client.subscribe("World");
+  client.subscribe("fei/cc1/temperatura/samuel");
   message = new Paho.MQTT.Message("Hello");
   message.destinationName = "World";
   client.send(message);

@@ -25,6 +25,8 @@
 #include <PubSubClient.h>
 #include "DHTesp.h"
 
+#include <ArduinoJson.h>
+
 #define DHTpin 15
 
 DHTesp dht;
@@ -34,12 +36,16 @@ DHTesp dht;
 
 const char* ssid = "RedAnonima_2.4G_2.4Gnormal";
 const char* password = "Competitiva2";
-const char* mqtt_server = "192.168.100.8";
+const char* mqtt_server = "192.168.100.50";
+
+// const char* ssid = "Doppelnetz";
+// const char* password = "13161912";
+// const char* mqtt_server = "192.168.137.1";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 unsigned long lastMsg = 0;
-#define MSG_BUFFER_SIZE	(50)
+#define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
 
@@ -78,13 +84,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   // Switch on the LED if an 1 was received as first character
   if ((char)payload[0] == '1') {
-    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
+    digitalWrite(BUILTIN_LED, LOW);  // Turn the LED on (Note that LOW is the voltage level
     // but actually the LED is on; this is because
     // it is active low on the ESP-01)
   } else {
     digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
   }
-
 }
 
 void reconnect() {
@@ -98,7 +103,7 @@ void reconnect() {
     if (client.connect(clientId.c_str())) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("fei/cc1/temperatura", "temperatura");
+      client.publish("fei/cc1/temperatura/samuel", "temperatura");
       // ... and resubscribe
       client.subscribe("inTopic");
     } else {
@@ -114,7 +119,7 @@ void reconnect() {
 void setup() {
   dht.setup(DHTpin, DHTesp::DHT11);
 
-  pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(BUILTIN_LED, OUTPUT);  // Initialize the BUILTIN_LED pin as an output
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, 1883);
@@ -130,34 +135,56 @@ void loop() {
 
   delay(dht.getMinimumSamplingPeriod());
 
-  float temperatura = dht.getTemperature();
-  float humedad = dht.getHumidity();
+  float temperatura = 20.6;  //dht.getTemperature();
+  float humedad = 26.7;      //dht.getHumidity();
+  float latitud = 0;
+  float longitud = 0;
 
-  if(isnan(humedad) || isnan(temperatura)){
-     Serial.print("No se pudo leer la temperatura");
-     return;
+  if (isnan(humedad) || isnan(temperatura)) {
+    Serial.print("No se pudo leer la temperatura");
+    return;
   }
 
-  Serial.print( dht.getStatusString() );
-  Serial.print("\t");
-  Serial.print(humedad, 1);
-  Serial.print("\t\t");
-  Serial.print(temperatura, 1);
-  Serial.print("\t\t");
-  Serial.print( dht.toFahrenheit(temperatura), 1);
-  Serial.print("\t\t");
-  Serial.print( dht.computeHeatIndex(temperatura, humedad, false), 1);
-  Serial.print("\t\t");
-  Serial.println(dht.computeHeatIndex(dht.toFahrenheit(temperatura), humedad, true), 1);
-  delay(2000);
+  // Serial.print( dht.getStatusString() );
+  // Serial.print("\t");
+  // Serial.print(humedad, 1);
+  // Serial.print("\t\t");
+  // Serial.print(temperatura, 1);
+  // Serial.print("\t\t");
+  // Serial.print( dht.toFahrenheit(temperatura), 1);
+  // Serial.print("\t\t");
+  // Serial.print( dht.computeHeatIndex(temperatura, humedad, falseu9n), 1);
+  // Serial.print("\t\t");
+  // Serial.println(dht.computeHeatIndex(dht.toFahrenheit(temperatura), humedad, true), 1);
+  // delay(2000);
+
+  //json
+
+  StaticJsonBuffer<300> JSONbuffer;
+  JsonObject& JSONencoder = JSONbuffer.createObject();
+
+  JSONencoder["temperatura"] = temperatura;
+  JSONencoder["humedad"] = humedad;
+  JSONencoder["latitud"] = latitud;
+  JSONencoder["longitud"] = longitud;
+
+  char JSONmessageBuffer[100];
+  JSONencoder.printTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
+  Serial.println(JSONmessageBuffer);
+  if (client.publish("esp/test", JSONmessageBuffer) == true) {
+    Serial.println("Success sending message");
+  } else {
+    Serial.println("Error sending message");
+  }
+  delay(10000);
 
   unsigned long now = millis();
   if (now - lastMsg > 2000) {
     lastMsg = now;
     ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "En el cc1 #%ld", value);
+    snprintf(msg, MSG_BUFFER_SIZE, "En el cc1 #%ld", value);
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("fei/cc1/temperatura", dtostrf(temperatura, 6, 2, msg));
+    client.publish("fei/cc1/temperatura/samuel",JSONmessageBuffer);
   }
 }
