@@ -1,5 +1,5 @@
 // Create a client instance
-client = new Paho.MQTT.Client("192.168.100.50", 9001, "SOO");
+client = new Paho.MQTT.Client("192.168.137.1", 9001, "SOO");
 
 // set callback handlers
 client.onConnectionLost = onConnectionLost;

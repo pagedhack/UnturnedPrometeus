@@ -44,3 +44,22 @@ function onMessageArrived(message) {
 //   client.send(message);
 //   document.getElementById('text1').innerText = document.getElementById('mensaje').value;
 // }
+
+
+
+
+//mapa  
+
+// var marker = L.marker([0, 0]).addTo(map);
+
+var map = L.map('map').setView([0, 0], 13);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 3,
+  attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+function enviar() {
+  lati = this.document.getElementById('lat').value;
+  long = this.document.getElementById('lon').value;
+  marker.setLatLng(L.latLng(lati, long))
+}

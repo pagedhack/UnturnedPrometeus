@@ -34,13 +34,13 @@ DHTesp dht;
 
 // Update these with values suitable for your network.
 
-const char* ssid = "RedAnonima_2.4G_2.4Gnormal";
-const char* password = "Competitiva2";
-const char* mqtt_server = "192.168.100.50";
+// const char* ssid = "RedAnonima_2.4G_2.4Gnormal";
+// const char* password = "Competitiva2";
+// const char* mqtt_server = "192.168.100.50";
 
-// const char* ssid = "Doppelnetz";
-// const char* password = "13161912";
-// const char* mqtt_server = "192.168.137.1";
+const char* ssid = "Doppelnetz";
+const char* password = "13161912";
+const char* mqtt_server = "192.168.137.1";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -135,7 +135,7 @@ void loop() {
 
   delay(dht.getMinimumSamplingPeriod());
 
-  float temperatura = 20.6;  //dht.getTemperature();
+  float temperatura = 23.6;  //dht.getTemperature();
   float humedad = 26.7;      //dht.getHumidity();
   float latitud = 0;
   float longitud = 0;
@@ -176,7 +176,7 @@ void loop() {
   } else {
     Serial.println("Error sending message");
   }
-  delay(10000);
+  delay(5000);
 
   unsigned long now = millis();
   if (now - lastMsg > 2000) {
