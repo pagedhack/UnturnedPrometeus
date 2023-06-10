@@ -1,72 +1,48 @@
-/*
- Ejemplo del canal de Youtube "MikroTutoriales"
- https://www.youtube.com/@MikroTutoriales16
- 
- Utilizando el broker MQTT de mqtt.mikrodash.com
- y la plataforma de https://app.mikrodash.com
- para crear una dashboard personalizada
-*/
-
 /**
  * Librerias de WiFi y utilidades para publicar en MQTT
 */
 
 #include <WiFi.h>
+#include <AsyncTCP.h>
 //#include <ESP8266WiFi.h>  //https://github.com/esp8266/Arduino
 #include <PubSubClient.h> //https://github.com/knolleary/pubsubclient
-#include <Arduino_JSON.h> //https://github.com/arduino-libraries/Arduino_JSON
-
-/**
- * 
- * Para la pantalla OLED
- * 
- */
-#include <SPI.h>
-#include <Wire.h>
-#include <Adafruit_SSD1306.h> //https://github.com/adafruit/Adafruit_SSD1306
-#include <Adafruit_GFX.h>
-#include <Fonts/FreeSerif9pt7b.h>
-
-// Definir constantes
-#define ANCHO_PANTALLA 128 // ancho pantalla OLED
-#define ALTO_PANTALLA 64 // alto pantalla OLED
-// Objeto de la clase Adafruit_SSD1306
-Adafruit_SSD1306 display(ANCHO_PANTALLA, ALTO_PANTALLA, &Wire, -1);
 
 //Para el sensor de Temperatura DHT11 y DHT22
 #include "DHTesp.h" // http://librarymanager/All#DHTesp
 
-#ifdef ESP32
-#pragma message(EXAMPLE FOR ESP8266 ON MIKRODASH!)
-//#error Select ESP8266 board.
-#endif
+#include <Arduino_JSON.h> //https://github.com/arduino-libraries/Arduino_JSON
+
+#define DHTpin 15
 
 DHTesp dht;
 
-//PINES DE ENTRADA
-#define PIN_TEMP 2
-#define PIN_SDA 4
-#define PIN_SCL 5
-
 //Topics MQTT
 const char* topic_temp = "646e39ec5c093741fd3a7efd/temperatura";
-const char* topic_hum = "";
+const char* topic_hum = "646e39ec5c093741fd3a7efd/humedad";
 // Constantes de configuracion
 const char* ssid = "Doppelnetz";              //Nombre Red Wi-Fi
 const char* password = "13161912";           //Contrasenia Red Wi-Fi
+
 const char* mqtt_server = "mqtt.mikrodash.com"; //Servidor MQTT
+const char* mqtt_server1 = "192.168.137.1"; //Servidor MQTT
+
 const int mqtt_port = 1883;                     //Puerto MQTT
 const int qos_level=1;                          //Calidad del servicio MQTT
-#define MSG_BUFFER_SIZE  (70)
-char msg[MSG_BUFFER_SIZE];
 
-#define MINUTES 1
-#define WAIT_MIN (1000UL * 60 * MINUTES)
-unsigned long rolltime = millis() + WAIT_MIN;
+//Credenciales MQTT MikroDash
+const char* usernameMQTT = "esp32_1685037382188";
+const char* passwordMQTT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2wiOiI0IiwiZXhwIjoxNjg3NTY0NzI0LCJpYXQiOjE2ODUwMzc1MjQsInVzZXJfaWQiOiI2NDZlMzllYzVjMDkzNzQxZmQzYTdlZmQiLCJ1c2VybmFtZSI6IiJ9.xdic9C_79LPyOkTMh8WnADbgJiIjQTaVhKZ8oYPfaTs";
 
 //Variables para la conexión y envio de mensajes MQTT
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+unsigned long lastMsg = 0;
+
+#define MSG_BUFFER_SIZE  (150)
+char msg[MSG_BUFFER_SIZE];
+
+int value = 0;
 
 //Conexion Wi-Fi
 void setup_wifi() {
@@ -99,13 +75,15 @@ void reconnect() {
     Serial.print("Conectando al broker MQTT...");
     // Se genera un ID aleatorio con
     String clientId = "MikroDashWiFiClient-";
-    clientId += String(random(0xffff), HEX);
+    //clientId += String(random(0xffff), HEX);
 
     //Cuando se conecta
-    if (client.connect(clientId.c_str())) {
+    if (client.connect(clientId.c_str(),usernameMQTT,passwordMQTT) ) {
       Serial.println("Conectado");
 
       //Topics a los que se suscribira para recibir cambios
+        //client.publish("invernadero/IOT", "temperatura");
+      client.subscribe(topic_temp, qos_level);
       //client.subscribe(topic_pwm,qos_level);
       //client.subscribe(topic_led,qos_level);
     } else {
@@ -117,39 +95,31 @@ void reconnect() {
   }
 }
 
-void setup()
-{
-  delay(10);
-  Serial.begin(9600);      //Comunicación serial para monitorear
+void setup(){
+  dht.setup(DHTpin, DHTesp::DHT11); // Cambiar DHT11 por DHT22 sino obtienes datos
+  
+  pinMode(BUILTIN_LED, OUTPUT);
+  Serial.begin(115200);      //Comunicación serial para monitorear
   setup_wifi();               //Se llama la funcición para conectarse al Wi-Fi
   client.setServer(mqtt_server, mqtt_port);  //Se indica el servidor y puerto de MQTT para conectarse
-  
-  String thisBoard= ARDUINO_BOARD;
-  Serial.println(thisBoard);
-  dht.setup(PIN_TEMP, DHTesp::DHT11); // Cambiar DHT11 por DHT22 sino obtienes datos
-
-  Wire.begin(PIN_SDA, PIN_SCL);
-  // Iniciar pantalla OLED en la dirección 0x3C/D
-  //if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
-  //  Serial.println("No se encuentra la pantalla OLED");
-  //}
 }
 
 bool first = true;
+
 void loop()
 {
   if (!client.connected()) { //Si se detecta que no hay conexión con el broker 
     reconnect();              //Reintenta la conexión
   }
-  //client.loop();            //De lo contrario crea un bucle para las suscripciones MQTT
+  client.loop();            //De lo contrario crea un bucle para las suscripciones MQTT
 
-  if((long)(millis() - rolltime) >= 0 || first) {
+  float temperature = 24;
+  float humidity = 5;
+
+  if(isnan(humidity) || isnan(temperature)) {
     delay(dht.getMinimumSamplingPeriod());
 
-    float temperature = dht.getTemperature();
-    float humidity = dht.getHumidity();
 
-    setTextOled(temperature, humidity);
     Serial.print(dht.getStatusString());
     Serial.print("\t");
     Serial.print(humidity, 1);
@@ -172,30 +142,7 @@ void loop()
     sprintf(msg, "{\"from\":\"device\",\"message\":\"Humedad\",\"save\":true,\"value\": %s}", humString);
     client.publish(topic_hum, msg, true); //Se actualiza el nuevo estado en el topic
 
-    rolltime += WAIT_MIN;
-    first = false;
+    delay(100);
   }
 
-}
-
-void setTextOled(float temp, float hum){
-  // Limpiar buffer
-  display.clearDisplay();
-  // Tamaño del texto
-  display.setFont(&FreeSerif9pt7b);
-  //display.setTextSize(1);
-  // Color del texto
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 20);
-  display.print("Temp: ");
-  display.print(temp);
-  display.drawCircle(96, 10, 2, WHITE);
-  //display.write(167);
-  display.println(" C");
-  display.setCursor(0, 50);
-  display.print("Hume: ");
-  display.print(hum);
-  display.println("%");
-  // Enviar a pantalla
-  display.display();
 }

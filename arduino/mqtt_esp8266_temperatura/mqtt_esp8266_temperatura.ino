@@ -40,7 +40,11 @@ DHTesp dht;
 
 const char* ssid = "Doppelnetz";
 const char* password = "13161912";
-const char* mqtt_server = "192.168.137.1";
+const char* mqtt_server = "mqtt.mikrodash.com";
+
+//Credenciales MQTT MikroDash
+const char* usernameMQTT = "esp32_1685037382188";
+const char* passwordMQTT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2wiOiI0IiwiZXhwIjoxNjg3NTY0NzI0LCJpYXQiOjE2ODUwMzc1MjQsInVzZXJfaWQiOiI2NDZlMzllYzVjMDkzNzQxZmQzYTdlZmQiLCJ1c2VybmFtZSI6IiJ9.xdic9C_79LPyOkTMh8WnADbgJiIjQTaVhKZ8oYPfaTs";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -100,7 +104,7 @@ void reconnect() {
     String clientId = "ESP8266Client-Samuel";
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
-    if (client.connect(clientId.c_str())) {
+    if (client.connect(clientId.c_str(), usernameMQTT, passwordMQTT) ) {
       Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish("fei/cc1/temperatura/samuel", "temperatura");
@@ -160,22 +164,22 @@ void loop() {
 
   //json
 
-  StaticJsonBuffer<300> JSONbuffer;
-  JsonObject& JSONencoder = JSONbuffer.createObject();
+  //StaticJsonBuffer<300> JSONbuffer;
+  //JsonObject& JSONencoder = JSONbuffer.createObject();
 
-  JSONencoder["temperatura"] = temperatura;
-  JSONencoder["humedad"] = humedad;
-  JSONencoder["latitud"] = latitud;
-  JSONencoder["longitud"] = longitud;
+  //JSONencoder["temperatura"] = temperatura;
+  //JSONencoder["humedad"] = humedad;
+  //JSONencoder["latitud"] = latitud;
+  //JSONencoder["longitud"] = longitud;
 
-  char JSONmessageBuffer[100];
-  JSONencoder.printTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
-  Serial.println(JSONmessageBuffer);
-  if (client.publish("esp/test", JSONmessageBuffer) == true) {
-    Serial.println("Success sending message");
-  } else {
-    Serial.println("Error sending message");
-  }
+  //char JSONmessageBuffer[100];
+  //JSONencoder.printTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
+  //Serial.println(JSONmessageBuffer);
+  //if (client.publish("esp/test", JSONmessageBuffer) == true) {
+  //  Serial.println("Success sending message");
+  //} else {
+  //  Serial.println("Error sending message");
+  //}
   delay(5000);
 
   unsigned long now = millis();

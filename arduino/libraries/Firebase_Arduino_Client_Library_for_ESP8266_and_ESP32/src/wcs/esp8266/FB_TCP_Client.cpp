@@ -1,3 +1,8 @@
+#include "Firebase_Client_Version.h"
+#if !FIREBASE_CLIENT_VERSION_CHECK(40310)
+#error "Mixed versions compilation."
+#endif
+
 /**
  * Firebase TCP Client v1.2.4
  *
